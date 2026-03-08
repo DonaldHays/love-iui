@@ -3,6 +3,9 @@
 A LÖVE backend for the [IUI](https://github.com/DonaldHays/iui) immediate mode
 GUI library.
 
+A [sample project](https://github.com/DonaldHays/iui-sample-love) that uses this
+backend is available.
+
 ## Installation
 
 This library provides the backend for [IUI](https://github.com/DonaldHays/iui)
