@@ -36,6 +36,11 @@ function graphics.newFont(size, hinting, dpiscale)
     return love.graphics.newFont(size, hinting, dpiscale)
 end
 
+--- @param image love.Texture
+function graphics.getImageDimensions(image)
+    return image:getDimensions()
+end
+
 function graphics.clip(x, y, w, h)
     love.graphics.setScissor(x, y, w, h)
 end
@@ -58,6 +63,15 @@ end
 
 function graphics.print(s, x, y)
     love.graphics.print(s, x, y)
+end
+
+--- @param image love.Texture
+function graphics.image(image, x, y, w, h)
+    local sw, sh = image:getDimensions()
+    sw = w / sw
+    sh = h / sh
+
+    love.graphics.draw(image, x, y, 0, sw, sh)
 end
 
 --- @class LoveIUIBackend: IUIBackend
