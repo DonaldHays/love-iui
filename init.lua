@@ -1,6 +1,11 @@
-local iui         --- @type IUILib
+local iui --- @type IUILib
+
+local currentPath = (...):gsub('%.init$', '') .. "."
+local resourcePath = currentPath:gsub("%.", "/")
 
 local rootContext --- @type IUIRootContext
+
+local aaUVShader  --- @type love.Shader
 
 --- @class LoveIUISystem: IUISystemBackend
 local system = {}
@@ -66,12 +71,26 @@ function graphics.print(s, x, y)
 end
 
 --- @param image love.Texture
-function graphics.image(image, x, y, w, h)
+function graphics.image(image, filter, x, y, w, h)
     local sw, sh = image:getDimensions()
     sw = w / sw
     sh = h / sh
 
+    local loveFilter = "linear"
+    if filter == "nearest" then
+        loveFilter = "nearest"
+    end
+
+    image:setFilter(loveFilter, loveFilter)
+    if filter == "smooth" then
+        love.graphics.setShader(aaUVShader)
+    end
+
     love.graphics.draw(image, x, y, 0, sw, sh)
+
+    if filter == "smooth" then
+        love.graphics.setShader()
+    end
 end
 
 --- @class LoveIUIBackend: IUIBackend
@@ -95,6 +114,10 @@ function backend.load(lib)
 
     rootContext = iui.newRootContext()
     iui.setRootContext(rootContext)
+
+    aaUVShader = love.graphics.newShader(
+        resourcePath .. "shaders/ui-image.glsl"
+    )
 end
 
 function backend.beginFrame(dt)
