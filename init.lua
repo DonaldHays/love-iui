@@ -22,6 +22,10 @@ function system.setCursor(cursor)
     love.mouse.setCursor(cursor --[[@as love.Cursor]])
 end
 
+function system.getDPI()
+    return love.graphics.getDPIScale()
+end
+
 function system.quit()
     love.event.quit()
 end
