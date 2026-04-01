@@ -39,6 +39,12 @@ function system.setCursor(cursor)
     love.mouse.setCursor(cursor --[[@as love.Cursor]])
 end
 
+function system.getMSDFImage(name)
+    return love.graphics.newImage(iui.resourcePath .. name, {
+        linear = true, mipmaps = false
+    })
+end
+
 function system.getDPI()
     return love.graphics.getDPIScale()
 end
