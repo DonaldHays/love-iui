@@ -6,6 +6,7 @@ local resourcePath = currentPath:gsub("%.", "/")
 local rootContext --- @type IUIRootContext
 
 local aaUVShader  --- @type love.Shader
+local msdfShader  --- @type love.Shader
 
 --- @class LoveIUI9SliceQuads
 --- @field tl love.Quad
@@ -170,6 +171,19 @@ function graphics.nineSlice(nineSlice, filter, x, y, w, h)
     end
 end
 
+--- @param image love.Texture
+function graphics.msdfImage(image, x, y, w, h)
+    local sw, sh = image:getDimensions()
+    sw = w / sw
+    sh = h / sh
+
+    love.graphics.setShader(msdfShader)
+
+    love.graphics.draw(image, x, y, 0, sw, sh)
+
+    love.graphics.setShader()
+end
+
 --- @class LoveIUIBackend: IUIBackend
 local backend = {
     graphics = graphics,
@@ -194,6 +208,10 @@ function backend.load(lib)
 
     aaUVShader = love.graphics.newShader(
         resourcePath .. "shaders/ui-image.glsl"
+    )
+
+    msdfShader = love.graphics.newShader(
+        resourcePath .. "shaders/ui-msdf.glsl"
     )
 end
 
