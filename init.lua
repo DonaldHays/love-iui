@@ -86,7 +86,7 @@ function graphics.rectangle(x, y, w, h, rx, ry)
 end
 
 function graphics.circle(x, y, r)
-    love.graphics.circle("fill", x, y, r)
+    love.graphics.circle("fill", x, y, r, iui.detail == "high" and 24 or 12)
 end
 
 function graphics.setFont(f)
