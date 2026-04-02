@@ -24,6 +24,54 @@ local msdfShader  --- @type love.Shader
 local nineSliceCache = {}    --- @type table<any, LoveIUI9SliceQuads>
 local newNineSliceCache = {} --- @type table<any, LoveIUI9SliceQuads>
 
+--- @param nineSlice IUIImage9Slice
+--- @param x number
+--- @param y number
+--- @param w number
+--- @param h number
+local function drawNineSlice(nineSlice, x, y, w, h)
+    --- @type love.Texture
+    local image = nineSlice.image
+    local l, t, r, b = nineSlice.l, nineSlice.t, nineSlice.r, nineSlice.b
+
+    local quads = nineSliceCache[nineSlice]
+    local iw, ih = image:getDimensions()
+
+    if quads == nil then
+        local vw = iw - (l + r)
+        local hh = ih - (t + b)
+
+        quads = {
+            tl = love.graphics.newQuad(0, 0, l, t, image),
+            tc = love.graphics.newQuad(l, 0, vw, t, image),
+            tr = love.graphics.newQuad(iw - r, 0, r, t, image),
+            ml = love.graphics.newQuad(0, t, l, hh, image),
+            mc = love.graphics.newQuad(l, t, vw, hh, image),
+            mr = love.graphics.newQuad(iw - r, t, r, hh, image),
+            bl = love.graphics.newQuad(0, ih - b, l, b, image),
+            bc = love.graphics.newQuad(l, ih - b, vw, b, image),
+            br = love.graphics.newQuad(iw - r, ih - b, r, b, image),
+            verticalWidth = vw,
+            horizontalHeight = hh
+        }
+    end
+
+    newNineSliceCache[nineSlice] = quads
+
+    local vw, hh = quads.verticalWidth, quads.horizontalHeight
+    local vs, hs = (h - (t + b)) / hh, (w - (l + r)) / vw
+
+    love.graphics.draw(image, quads.tl, x, y)
+    love.graphics.draw(image, quads.tc, x + l, y, 0, hs, 1)
+    love.graphics.draw(image, quads.tr, x + w - r, y)
+    love.graphics.draw(image, quads.ml, x, y + t, 0, 1, vs)
+    love.graphics.draw(image, quads.mc, x + l, y + t, 0, hs, vs)
+    love.graphics.draw(image, quads.mr, x + w - r, y + t, 0, 1, vs)
+    love.graphics.draw(image, quads.bl, x, y + h - b)
+    love.graphics.draw(image, quads.bc, x + l, y + h - b, 0, hs, 1)
+    love.graphics.draw(image, quads.br, x + w - r, y + h - b)
+end
+
 --- @class LoveIUISystem: IUISystemBackend
 local system = {}
 
@@ -121,56 +169,17 @@ function graphics.image(image, filter, x, y, w, h)
 end
 
 function graphics.nineSlice(nineSlice, filter, x, y, w, h)
-    --- @type love.Texture
-    local image = nineSlice.image
-    local l, t, r, b = nineSlice.l, nineSlice.t, nineSlice.r, nineSlice.b
-
-    local quads = nineSliceCache[nineSlice]
-    local iw, ih = image:getDimensions()
-
-    if quads == nil then
-        local vw = iw - (l + r)
-        local hh = ih - (t + b)
-
-        quads = {
-            tl = love.graphics.newQuad(0, 0, l, t, image),
-            tc = love.graphics.newQuad(l, 0, vw, t, image),
-            tr = love.graphics.newQuad(iw - r, 0, r, t, image),
-            ml = love.graphics.newQuad(0, t, l, hh, image),
-            mc = love.graphics.newQuad(l, t, vw, hh, image),
-            mr = love.graphics.newQuad(iw - r, t, r, hh, image),
-            bl = love.graphics.newQuad(0, ih - b, l, b, image),
-            bc = love.graphics.newQuad(l, ih - b, vw, b, image),
-            br = love.graphics.newQuad(iw - r, ih - b, r, b, image),
-            verticalWidth = vw,
-            horizontalHeight = hh
-        }
-    end
-
-    newNineSliceCache[nineSlice] = quads
-
-    local vw, hh = quads.verticalWidth, quads.horizontalHeight
-    local vs, hs = (h - (t + b)) / hh, (w - (l + r)) / vw
-
     local loveFilter = "linear"
     if filter == "nearest" then
         loveFilter = "nearest"
     end
 
-    image:setFilter(loveFilter, loveFilter)
+    nineSlice.image:setFilter(loveFilter, loveFilter)
     if filter == "smooth" then
         love.graphics.setShader(aaUVShader)
     end
 
-    love.graphics.draw(image, quads.tl, x, y)
-    love.graphics.draw(image, quads.tc, x + l, y, 0, hs, 1)
-    love.graphics.draw(image, quads.tr, x + w - r, y)
-    love.graphics.draw(image, quads.ml, x, y + t, 0, 1, vs)
-    love.graphics.draw(image, quads.mc, x + l, y + t, 0, hs, vs)
-    love.graphics.draw(image, quads.mr, x + w - r, y + t, 0, 1, vs)
-    love.graphics.draw(image, quads.bl, x, y + h - b)
-    love.graphics.draw(image, quads.bc, x + l, y + h - b, 0, hs, 1)
-    love.graphics.draw(image, quads.br, x + w - r, y + h - b)
+    drawNineSlice(nineSlice, x, y, w, h)
 
     if filter == "smooth" then
         love.graphics.setShader()
@@ -186,6 +195,14 @@ function graphics.msdfImage(image, x, y, w, h)
     love.graphics.setShader(msdfShader)
 
     love.graphics.draw(image, x, y, 0, sw, sh)
+
+    love.graphics.setShader()
+end
+
+function graphics.msdfNineSlice(nineSlice, x, y, w, h)
+    love.graphics.setShader(msdfShader)
+
+    drawNineSlice(nineSlice, x, y, w, h)
 
     love.graphics.setShader()
 end
