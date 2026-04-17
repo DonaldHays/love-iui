@@ -122,6 +122,14 @@ function graphics.getImageDimensions(image)
 end
 
 function graphics.clip(x, y, w, h)
+    if w then
+        w = math.max(w, 0)
+    end
+
+    if h then
+        h = math.max(h, 0)
+    end
+
     love.graphics.setScissor(x, y, w, h)
 end
 
