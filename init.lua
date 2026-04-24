@@ -75,6 +75,16 @@ end
 --- @class LoveIUISystem: IUISystemBackend
 local system = {}
 
+function system.getOS()
+    local os = love.system.getOS()
+
+    if os == "OS X" then
+        return "macOS"
+    end
+
+    return os
+end
+
 function system.getTimestamp()
     return love.timer.getTime()
 end
