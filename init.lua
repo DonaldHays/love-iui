@@ -3,10 +3,17 @@ local iui --- @type IUILib
 local currentPath = (...):gsub('%.init$', '') .. "."
 local resourcePath = currentPath:gsub("%.", "/")
 
-local rootContext --- @type IUIRootContext
+--- @type IUIWindowManager
+local fullscreenWindowManager
 
-local aaUVShader  --- @type love.Shader
-local msdfShader  --- @type love.Shader
+--- @type IUIMouseRootContext
+local mouseRootContext
+
+--- @type love.Shader
+local aaUVShader
+
+--- @type love.Shader
+local msdfShader
 
 --- @class LoveIUI9SliceQuads
 --- @field tl love.Quad
@@ -244,8 +251,8 @@ end
 function backend.load(lib)
     iui = lib
 
-    rootContext = iui.newRootContext()
-    iui.setRootContext(rootContext)
+    mouseRootContext = iui.input.mouse.newRootContext()
+    iui.input.mouse.setRootContext(mouseRootContext)
 
     aaUVShader = love.graphics.newShader(
         resourcePath .. "shaders/ui-image.glsl"
@@ -257,14 +264,19 @@ function backend.load(lib)
 end
 
 function backend.beginFrame(dt)
-    rootContext:beginFrame()
-
     nineSliceCache = newNineSliceCache
     newNineSliceCache = {}
 end
 
 function backend.endFrame()
-    rootContext:endFrame()
+end
+
+function backend.getFullscreenWindowManager()
+    if fullscreenWindowManager == nil then
+        fullscreenWindowManager = iui.newWindowManager()
+    end
+
+    return fullscreenWindowManager
 end
 
 --- @param x number
